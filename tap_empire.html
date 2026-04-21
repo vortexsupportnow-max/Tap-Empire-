@@ -152,6 +152,52 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   text-shadow:0 0 20px rgba(245,200,66,0.3);
 }
 @keyframes breathe{0%,100%{opacity:0.4}50%{opacity:0.9}}
+
+/* TABS */
+#tab-bar{display:flex;gap:6px;margin-bottom:8px}
+.tab-btn{
+  flex:1;padding:5px 8px;
+  border:1px solid rgba(245,200,66,0.18);
+  background:rgba(0,0,0,0.45);border-radius:8px;
+  font-family:'Cinzel',serif;font-size:9px;color:rgba(245,200,66,0.4);
+  cursor:pointer;letter-spacing:1px;transition:all 0.2s;
+}
+.tab-btn.active{
+  background:rgba(245,200,66,0.1);border-color:rgba(245,200,66,0.55);
+  color:#f5c842;text-shadow:0 0 8px rgba(245,200,66,0.4);
+}
+
+/* TAP UPGRADES ROW */
+#trow{display:none;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+#trow::-webkit-scrollbar{display:none}
+.tc{
+  flex-shrink:0;min-width:80px;
+  background:rgba(80,140,245,0.04);
+  border:1px solid rgba(80,140,245,0.14);
+  border-radius:12px;padding:8px 8px 7px;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.tc:hover{background:rgba(80,140,245,0.1);border-color:rgba(80,140,245,0.45);transform:translateY(-3px)}
+.tc.affordable{border-color:rgba(80,140,245,0.6);box-shadow:0 0 16px rgba(80,140,245,0.22)}
+.tc.bought{background:rgba(80,200,100,0.08);border-color:rgba(80,200,100,0.45);cursor:default;pointer-events:none}
+.tc.locked{opacity:0.25;cursor:not-allowed;pointer-events:none}
+.tc-sym{font-size:24px;line-height:1}
+.tc-name{font-family:'Cinzel',serif;font-size:7.5px;color:rgba(120,170,255,0.8);letter-spacing:0.4px;text-align:center}
+.tc-mult{font-size:11px;font-weight:700;color:rgba(80,220,120,0.9)}
+.tc-cost{font-size:10px;color:rgba(120,170,255,0.6)}
+
+/* PRESTIGE BUTTON */
+#prestige-btn{
+  display:none;position:absolute;bottom:115px;right:14px;z-index:30;
+  background:linear-gradient(135deg,rgba(70,30,0,0.95),rgba(30,10,0,0.95));
+  border:1px solid rgba(245,200,66,0.8);border-radius:20px;
+  padding:7px 14px;font-family:'Cinzel',serif;font-size:10px;
+  color:#f5c842;cursor:pointer;letter-spacing:1px;
+  text-shadow:0 0 10px rgba(245,200,66,0.5);
+  box-shadow:0 0 20px rgba(245,200,66,0.25);
+  animation:breathe 3s ease-in-out infinite;
+}
 </style>
 </head>
 <body>
@@ -185,8 +231,14 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   <div id="hint">Tocca per costruire il tuo impero</div>
 
   <div id="panel">
+    <div id="tab-bar">
+      <button class="tab-btn active" id="btn-build" onclick="switchTab('build')">🏛 Costruzioni</button>
+      <button class="tab-btn" id="btn-tap" onclick="switchTab('tap')">⚡ Potenzia Tap</button>
+    </div>
     <div id="brow"></div>
+    <div id="trow"></div>
   </div>
+  <button id="prestige-btn" onclick="prestige()"></button>
 </div>
 
 <script>
@@ -221,7 +273,17 @@ const BLDGS=[
   {name:'Fabbrica',  cost:80000, mult:1.80,inc:2000,pop:400, unlock:5,max:5, color:'#505860'},
 ];
 
-// ─── STATE ─────────────────────────────────────────────
+const TAP_UPGRADES=[
+  {name:'Selce Affilata',  sym:'🪨', cost:30,      mult:2,  unlock:0},
+  {name:'Bronzo Forgiato', sym:'⚔️', cost:600,     mult:3,  unlock:1},
+  {name:'Lama d\'Acciaio', sym:'🗡️', cost:6000,    mult:5,  unlock:2},
+  {name:'Polvere da Sparo',sym:'💥', cost:50000,   mult:10, unlock:3},
+  {name:'Motore a Vapore', sym:'⚙️', cost:300000,  mult:20, unlock:4},
+  {name:'IA Quantistica',  sym:'🔬', cost:2000000, mult:50, unlock:5},
+];
+let tapBought=[false,false,false,false,false,false];
+let prestigeGems=0;
+let uiThrottle=0;
 let gold=0,totalEarned=0,population=12,incomeRate=0;
 let era=0,lvls=[0,0,0,0,0,0],tapPower=1;
 let lastTime=performance.now();
@@ -828,6 +890,7 @@ function buildPanel(){
     brow.appendChild(div);
   });
   drawBuildingIcons();
+  buildTapPanel();
 }
 
 function drawBuildingIcons(){
@@ -921,7 +984,7 @@ function buy(i){
   lvls[i]++;
   incomeRate+=b.inc;
   population+=b.pop;
-  tapPower=Math.max(1,Math.round(1+incomeRate*0.06));
+  recalcTapPower();
   initTerrain();
   notify(`${b.name} potenziata — Livello ${lvls[i]}`);
   spawnParticles(W/2,H*0.55,12,'#f5c842');
@@ -1011,6 +1074,18 @@ function updateUI(){
     else if(canAfford){card.className='bc affordable';}
     else{card.className='bc';}
   });
+
+  updateTapPanel();
+
+  const pb=document.getElementById('prestige-btn');
+  if(pb){
+    const cp=canPrestige();
+    pb.style.display=cp?'block':'none';
+    if(cp){
+      const nextMult=(1+(prestigeGems+1)*0.5).toFixed(1);
+      pb.textContent=`⭐ Prestige (x${nextMult})`;
+    }
+  }
 }
 
 // ─── NOTIFY ────────────────────────────────────────────
@@ -1029,8 +1104,12 @@ function loop(ts){
   if(incomeRate>0){
     gold+=incomeRate*dt;
     totalEarned+=incomeRate*dt;
-    checkEra();
-    updateUI();
+    uiThrottle+=dt;
+    if(uiThrottle>=0.25){
+      uiThrottle=0;
+      checkEra();
+      updateUI();
+    }
   }
   drawSky(ts);
   drawWorld(ts);
@@ -1038,13 +1117,153 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
+// ─── TAP POWER ─────────────────────────────────────────
+function recalcTapPower(){
+  const base=1+incomeRate*0.06;
+  const tapMult=TAP_UPGRADES.reduce((m,u,i)=>tapBought[i]?m*u.mult:m,1);
+  const presBonus=1+prestigeGems*0.5;
+  tapPower=Math.max(1,Math.round(base*tapMult*presBonus));
+}
+
+// ─── TAB SWITCH ────────────────────────────────────────
+function switchTab(t){
+  document.getElementById('brow').style.display=t==='build'?'flex':'none';
+  document.getElementById('trow').style.display=t==='tap'?'flex':'none';
+  document.getElementById('btn-build').classList.toggle('active',t==='build');
+  document.getElementById('btn-tap').classList.toggle('active',t==='tap');
+}
+
+// ─── TAP UPGRADES PANEL ────────────────────────────────
+function buildTapPanel(){
+  const trow=document.getElementById('trow');
+  trow.innerHTML='';
+  TAP_UPGRADES.forEach((u,i)=>{
+    const div=document.createElement('div');
+    div.className='tc locked';
+    div.id='tc'+i;
+    div.onclick=()=>buyTap(i);
+    div.innerHTML=`
+      <div class="tc-sym">${u.sym}</div>
+      <div class="tc-name">${u.name}</div>
+      <div class="tc-mult">x${u.mult}</div>
+      <div class="tc-cost" id="tco${i}">${fmtNum(u.cost)} ✦</div>
+    `;
+    trow.appendChild(div);
+  });
+}
+
+function buyTap(i){
+  const u=TAP_UPGRADES[i];
+  if(tapBought[i]||era<u.unlock||gold<u.cost)return;
+  gold-=u.cost;
+  tapBought[i]=true;
+  recalcTapPower();
+  notify(`${u.name} acquistata — Tap x${u.mult}!`);
+  spawnParticles(W/2,H*0.55,15,'#5090ff');
+  spawnParticles(W/2,H*0.55,8,'#80c0ff');
+  checkEra();updateUI();
+}
+
+function updateTapPanel(){
+  TAP_UPGRADES.forEach((u,i)=>{
+    const card=document.getElementById('tc'+i);
+    if(!card)return;
+    const costEl=document.getElementById('tco'+i);
+    if(tapBought[i]){
+      card.className='tc bought';
+      if(costEl)costEl.textContent='✓ Acquistata';
+    }else if(era<u.unlock){
+      card.className='tc locked';
+      if(costEl)costEl.textContent=ERAS[u.unlock].name;
+    }else if(gold>=u.cost){
+      card.className='tc affordable';
+      if(costEl)costEl.textContent=fmtNum(u.cost)+' ✦';
+    }else{
+      card.className='tc';
+      if(costEl)costEl.textContent=fmtNum(u.cost)+' ✦';
+    }
+  });
+}
+
+// ─── PRESTIGE ──────────────────────────────────────────
+function canPrestige(){
+  return totalEarned>=400000&&lvls.reduce((a,b)=>a+b,0)>=20;
+}
+
+function prestige(){
+  if(!canPrestige())return;
+  const nextGems=prestigeGems+1;
+  const nextMult=(1+nextGems*0.5).toFixed(1);
+  if(!confirm(`Prestige: riceverai la ${nextGems}ª Gemma Imperiale e un moltiplicatore permanente x${nextMult}.\nTutto il progresso attuale verrà azzerato. Continuare?`))return;
+  prestigeGems++;
+  gold=0;totalEarned=0;population=12;incomeRate=0;era=0;
+  lvls=[0,0,0,0,0,0];tapBought=[false,false,false,false,false,false];
+  recalcTapPower();
+  initTerrain();
+  document.getElementById('era-name').textContent=ERAS[0].name;
+  document.getElementById('progress-fill').style.width='0%';
+  buildPanel();
+  checkEra();updateUI();
+  notify(`✦ Prestige! Gemme: ${prestigeGems} — Moltiplicatore: x${1+prestigeGems*0.5} ✦`);
+  save();
+}
+
+// ─── SAVE / LOAD ───────────────────────────────────────
+const SAVE_KEY='tapEmpire_v2';
+
+function save(){
+  try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify({
+      gold,totalEarned,population,incomeRate,era,
+      lvls:[...lvls],tapBought:[...tapBought],
+      prestigeGems,savedAt:Date.now()
+    }));
+  }catch(e){}
+}
+
+function load(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    gold=d.gold||0;
+    totalEarned=d.totalEarned||0;
+    population=d.population||12;
+    incomeRate=d.incomeRate||0;
+    era=Math.min(d.era||0,ERAS.length-1);
+    lvls=Array.isArray(d.lvls)?d.lvls.map(v=>v||0):[0,0,0,0,0,0];
+    tapBought=Array.isArray(d.tapBought)?d.tapBought.map(v=>!!v):[false,false,false,false,false,false];
+    prestigeGems=d.prestigeGems||0;
+    recalcTapPower();
+    // Offline income (max 4 hours)
+    if(d.savedAt&&incomeRate>0){
+      const elapsed=Math.min((Date.now()-d.savedAt)/1000,4*3600);
+      const earned=incomeRate*elapsed;
+      if(earned>=1){
+        gold+=earned;
+        totalEarned+=earned;
+        const totalMin=Math.floor(elapsed/60);
+        const h=Math.floor(totalMin/60);
+        const m=totalMin%60;
+        const timeStr=h>0?`${h}h ${m}m`:`${m}m`;
+        setTimeout(()=>notify(`🏠 Reddito offline: +${fmtNum(Math.floor(earned))} ✦ (${timeStr})`),600);
+      }
+    }
+  }catch(e){}
+}
+
 // ─── INIT ──────────────────────────────────────────────
 document.getElementById('tap-zone').addEventListener('click',handleTap);
 document.getElementById('tap-zone').addEventListener('touchstart',(e)=>{e.preventDefault();handleTap(e);},{passive:false});
 
+load();
 resize();
+document.getElementById('era-name').textContent=ERAS[era].name;
 buildPanel();
+checkEra();
 updateUI();
+setInterval(save,15000);
+window.addEventListener('beforeunload',save);
 requestAnimationFrame(ts=>{lastTime=ts;requestAnimationFrame(loop);});
 </script>
 </body>
