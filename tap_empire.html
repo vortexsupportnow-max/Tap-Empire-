@@ -281,6 +281,14 @@ const TAP_UPGRADES=[
   {name:'Motore a Vapore', sym:'⚙️', cost:300000,  mult:20, unlock:4},
   {name:'IA Quantistica',  sym:'🔬', cost:2000000, mult:50, unlock:5},
 ];
+
+// ─── GAME CONSTANTS ────────────────────────────────────
+const UI_UPDATE_INTERVAL    = 0.25;   // seconds between DOM UI refreshes in the game loop
+const MAX_OFFLINE_SECONDS   = 4*3600; // offline income cap (4 hours)
+const AUTOSAVE_INTERVAL     = 15000;  // ms between auto-saves
+const PRESTIGE_GOLD_THRESH  = 400000; // totalEarned needed to prestige
+const PRESTIGE_LEVEL_THRESH = 20;     // total building levels needed to prestige
+
 let tapBought=[false,false,false,false,false,false];
 let prestigeGems=0;
 let uiThrottle=0;
@@ -1105,7 +1113,7 @@ function loop(ts){
     gold+=incomeRate*dt;
     totalEarned+=incomeRate*dt;
     uiThrottle+=dt;
-    if(uiThrottle>=0.25){
+    if(uiThrottle>=UI_UPDATE_INTERVAL){
       uiThrottle=0;
       checkEra();
       updateUI();
@@ -1187,7 +1195,7 @@ function updateTapPanel(){
 
 // ─── PRESTIGE ──────────────────────────────────────────
 function canPrestige(){
-  return totalEarned>=400000&&lvls.reduce((a,b)=>a+b,0)>=20;
+  return totalEarned>=PRESTIGE_GOLD_THRESH&&lvls.reduce((a,b)=>a+b,0)>=PRESTIGE_LEVEL_THRESH;
 }
 
 function prestige(){
@@ -1237,7 +1245,7 @@ function load(){
     recalcTapPower();
     // Offline income (max 4 hours)
     if(d.savedAt&&incomeRate>0){
-      const elapsed=Math.min((Date.now()-d.savedAt)/1000,4*3600);
+      const elapsed=Math.min((Date.now()-d.savedAt)/1000,MAX_OFFLINE_SECONDS);
       const earned=incomeRate*elapsed;
       if(earned>=1){
         gold+=earned;
@@ -1262,7 +1270,7 @@ document.getElementById('era-name').textContent=ERAS[era].name;
 buildPanel();
 checkEra();
 updateUI();
-setInterval(save,15000);
+setInterval(save,AUTOSAVE_INTERVAL);
 window.addEventListener('beforeunload',save);
 requestAnimationFrame(ts=>{lastTime=ts;requestAnimationFrame(loop);});
 </script>
