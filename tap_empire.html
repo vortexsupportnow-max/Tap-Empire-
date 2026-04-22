@@ -198,6 +198,44 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   box-shadow:0 0 20px rgba(245,200,66,0.25);
   animation:breathe 3s ease-in-out infinite;
 }
+
+/* SHOP */
+#srow{display:none;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+#srow::-webkit-scrollbar{display:none}
+.sc{
+  flex-shrink:0;min-width:88px;
+  background:rgba(130,60,200,0.04);
+  border:1px solid rgba(130,60,200,0.18);
+  border-radius:12px;padding:8px 8px 7px;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.sc:hover{background:rgba(130,60,200,0.12);border-color:rgba(130,60,200,0.55);transform:translateY(-3px)}
+.sc.affordable{border-color:rgba(130,60,200,0.7);box-shadow:0 0 16px rgba(130,60,200,0.25)}
+.sc.active-boost{background:rgba(80,200,120,0.1);border-color:rgba(80,200,120,0.6);cursor:default}
+.sc-sym{font-size:22px;line-height:1.1}
+.sc-name{font-family:'Cinzel',serif;font-size:7.5px;color:rgba(180,120,255,0.9);letter-spacing:0.4px;text-align:center}
+.sc-desc{font-size:7.5px;color:rgba(180,120,255,0.5);text-align:center}
+.sc-cost{font-size:10px;color:rgba(180,120,255,0.75)}
+.sc-timer{font-size:9px;color:rgba(80,220,120,0.95);font-weight:700;min-height:11px}
+
+/* BOOST BAR */
+#boost-bar{
+  position:absolute;top:52px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;z-index:20;pointer-events:none;flex-wrap:wrap;justify-content:center;
+  max-width:90vw;
+}
+.boost-pill{
+  background:rgba(80,200,120,0.18);border:1px solid rgba(80,200,120,0.55);
+  border-radius:20px;padding:2px 9px;
+  font-family:'Cinzel',serif;font-size:8px;color:rgba(80,220,120,0.95);
+  letter-spacing:0.5px;
+}
+/* ERA PROGRESS TEXT */
+#era-progress-txt{
+  font-size:8px;color:rgba(245,200,66,0.38);letter-spacing:1px;margin-top:2px;
+  font-family:'Cinzel',serif;
+}
 </style>
 </head>
 <body>
@@ -209,15 +247,18 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   <div id="tap-zone"></div>
 
   <div id="hud">
-    <div id="era-name">Era Neolitica</div>
+    <div>
+      <div id="era-name">Era Neolitica</div>
+      <div id="era-progress-txt"></div>
+    </div>
     <div class="stats">
       <div class="stat">
         <svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="8" fill="#d4900a"/><circle cx="9" cy="9" r="6" fill="#f5c842"/><circle cx="9" cy="9" r="3" fill="#8a5a00"/><circle cx="7" cy="7" r="1" fill="rgba(255,255,200,0.5)"/></svg>
         <div><div class="stat-val" id="sv-gold">0</div><div class="stat-lbl">ORO</div></div>
       </div>
       <div class="stat">
-        <svg viewBox="0 0 18 18"><circle cx="7" cy="6" r="3.5" fill="#d4b888"/><path d="M1 17 Q7 10 13 17" fill="#c09870" stroke="none"/><circle cx="13" cy="6" r="2.8" fill="#c8a878"/><path d="M8 17 Q13 11 17 17" fill="#b08860" stroke="none"/></svg>
-        <div><div class="stat-val" id="sv-pop">12</div><div class="stat-lbl">POPOLO</div></div>
+        <svg viewBox="0 0 18 18"><polygon points="9,1 12,6 17,7 13,12 14,17 9,14 4,17 5,12 1,7 6,6" fill="#a060e0" stroke="#c080ff" stroke-width="0.8"/></svg>
+        <div><div class="stat-val" id="sv-gems">0</div><div class="stat-lbl">GEMME</div></div>
       </div>
       <div class="stat">
         <svg viewBox="0 0 18 18"><path d="M9 2L16 9 9 16 2 9Z" fill="none" stroke="#4aaa44" stroke-width="1.5"/><path d="M9 6L12 9 9 12 6 9Z" fill="#4aaa44"/></svg>
@@ -227,6 +268,7 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   </div>
 
   <div id="notif"></div>
+  <div id="boost-bar"></div>
   <div id="era-veil"></div>
   <div id="hint">Tocca per costruire il tuo impero</div>
 
@@ -234,9 +276,11 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
     <div id="tab-bar">
       <button class="tab-btn active" id="btn-build" onclick="switchTab('build')">🏛 Costruzioni</button>
       <button class="tab-btn" id="btn-tap" onclick="switchTab('tap')">⚡ Potenzia Tap</button>
+      <button class="tab-btn" id="btn-shop" onclick="switchTab('shop')">🏪 Negozio</button>
     </div>
     <div id="brow"></div>
     <div id="trow"></div>
+    <div id="srow"></div>
   </div>
   <button id="prestige-btn" onclick="prestige()"></button>
 </div>
@@ -244,53 +288,64 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 <script>
 // ─── DATA ──────────────────────────────────────────────
 const ERAS=[
-  {name:'Era Neolitica',    thresh:0,
+  {name:'Era Neolitica',    levelThresh:0,
    sky:['#060c24','#0f1e48','#1e3870','#3c6098','#98b8d8','#e8c870','#d87828'],
    ground:'#527828',ground2:'#3c5c1e'},
-  {name:'Era del Bronzo',   thresh:400,
+  {name:'Era del Bronzo',   levelThresh:8,
    sky:['#080e2a','#121e50','#243a80','#4870a8','#b0c8e0','#f0d888','#e89838'],
    ground:'#4a7020',ground2:'#385818'},
-  {name:'Era Medievale',    thresh:2500,
+  {name:'Era Medievale',    levelThresh:22,
    sky:['#060a20','#0e1638','#202e60','#384e80','#8098b8','#d8c060','#c07020'],
    ground:'#426818',ground2:'#305010'},
-  {name:'Rinascimento',     thresh:15000,
+  {name:'Rinascimento',     levelThresh:48,
    sky:['#080c28','#121a48','#283068','#405888','#90a8c8','#ead870','#d88830'],
    ground:'#3e6816',ground2:'#2c4e10'},
-  {name:'Era Industriale',  thresh:80000,
+  {name:'Era Industriale',  levelThresh:85,
    sky:['#080808','#101018','#181828','#282838','#484850','#787060','#907848'],
    ground:'#384818',ground2:'#283410'},
-  {name:'Era Moderna',      thresh:400000,
+  {name:'Era Moderna',      levelThresh:135,
    sky:['#04060e','#0a1028','#162050','#2848a0','#7098d0','#b8d8f0','#d8eeff'],
    ground:'#2e4c14',ground2:'#1e3408'},
 ];
 
 const BLDGS=[
-  {name:'Capanna',   cost:50,    mult:1.55,inc:0.5, pop:8,   unlock:0,max:25,color:'#8a6030'},
-  {name:'Campo',     cost:200,   mult:1.60,inc:3,   pop:15,  unlock:1,max:20,color:'#6a8820'},
-  {name:'Miniera',   cost:800,   mult:1.65,inc:15,  pop:30,  unlock:2,max:15,color:'#787068'},
-  {name:'Fortezza',  cost:3000,  mult:1.70,inc:80,  pop:60,  unlock:3,max:10,color:'#706858'},
-  {name:'Cattedrale',cost:15000, mult:1.75,inc:400, pop:150, unlock:4,max:7, color:'#c8b060'},
-  {name:'Fabbrica',  cost:80000, mult:1.80,inc:2000,pop:400, unlock:5,max:5, color:'#505860'},
+  {name:'Capanna',   cost:200,    mult:1.60,inc:0.5,  pop:8,   unlock:0,max:50,color:'#8a6030'},
+  {name:'Campo',     cost:1000,   mult:1.65,inc:3,    pop:15,  unlock:1,max:40,color:'#6a8820'},
+  {name:'Miniera',   cost:5000,   mult:1.70,inc:15,   pop:30,  unlock:2,max:30,color:'#787068'},
+  {name:'Fortezza',  cost:25000,  mult:1.75,inc:80,   pop:60,  unlock:3,max:20,color:'#706858'},
+  {name:'Cattedrale',cost:120000, mult:1.80,inc:400,  pop:150, unlock:4,max:15,color:'#c8b060'},
+  {name:'Fabbrica',  cost:600000, mult:1.85,inc:2000, pop:400, unlock:5,max:10,color:'#505860'},
 ];
 
 const TAP_UPGRADES=[
-  {name:'Selce Affilata',  sym:'🪨', cost:30,      mult:2,  unlock:0},
-  {name:'Bronzo Forgiato', sym:'⚔️', cost:600,     mult:3,  unlock:1},
-  {name:'Lama d\'Acciaio', sym:'🗡️', cost:6000,    mult:5,  unlock:2},
-  {name:'Polvere da Sparo',sym:'💥', cost:50000,   mult:10, unlock:3},
-  {name:'Motore a Vapore', sym:'⚙️', cost:300000,  mult:20, unlock:4},
-  {name:'IA Quantistica',  sym:'🔬', cost:2000000, mult:50, unlock:5},
+  {name:'Selce Affilata',  sym:'🪨', cost:150,       mult:2,  unlock:0},
+  {name:'Bronzo Forgiato', sym:'⚔️', cost:4000,      mult:3,  unlock:1},
+  {name:'Lama d\'Acciaio', sym:'🗡️', cost:40000,     mult:5,  unlock:2},
+  {name:'Polvere da Sparo',sym:'💥', cost:300000,    mult:10, unlock:3},
+  {name:'Motore a Vapore', sym:'⚙️', cost:2000000,   mult:20, unlock:4},
+  {name:'IA Quantistica',  sym:'🔬', cost:12000000,  mult:50, unlock:5},
+];
+
+const SHOP_ITEMS=[
+  {id:'gs1',  name:'Gemma',        sym:'💎',  desc:'1 Gemma Imperiale',    costGold:3000000, costGems:0, type:'gem',     amount:1},
+  {id:'gs5',  name:'5 Gemme',      sym:'💎',  desc:'Pacchetto risparmio',  costGold:12000000,costGems:0, type:'gem',     amount:5},
+  {id:'rush', name:'Gold Rush',    sym:'⚡',  desc:'+100% reddito (2h)',   costGold:0, costGems:2, type:'boost',   dur:7200,  stat:'income', mult:2},
+  {id:'tap',  name:'Tap Frenzy',   sym:'👆',  desc:'+500% tap (1h)',       costGold:0, costGems:1, type:'boost',   dur:3600,  stat:'tap',    mult:6},
+  {id:'disc', name:'Grande Sconto',sym:'🏷️', desc:'-50% costi (2h)',      costGold:0, costGems:3, type:'boost',   dur:7200,  stat:'cost',   mult:0.5},
+  {id:'mega', name:'Mega Reddito', sym:'🚀',  desc:'+300% reddito (4h)',   costGold:0, costGems:5, type:'boost',   dur:14400, stat:'income', mult:4},
+  {id:'time', name:'Offline 4h',   sym:'⏩',  desc:'+4h reddito istantaneo',costGold:0,costGems:3, type:'instant'},
 ];
 
 // ─── GAME CONSTANTS ────────────────────────────────────
 const UI_UPDATE_INTERVAL    = 0.25;   // seconds between DOM UI refreshes in the game loop
 const MAX_OFFLINE_SECONDS   = 4*3600; // offline income cap (4 hours)
 const AUTOSAVE_INTERVAL     = 15000;  // ms between auto-saves
-const PRESTIGE_GOLD_THRESH  = 400000; // totalEarned needed to prestige
-const PRESTIGE_LEVEL_THRESH = 20;     // total building levels needed to prestige
+const PRESTIGE_LEVEL_THRESH = 160;    // total building levels needed to prestige
 
 let tapBought=[false,false,false,false,false,false];
 let prestigeGems=0;
+let gems=0;
+let activeBoosts={};
 let uiThrottle=0;
 let gold=0,totalEarned=0,population=12,incomeRate=0;
 let era=0,lvls=[0,0,0,0,0,0],tapPower=1;
@@ -1038,6 +1093,7 @@ function buildPanel(){
   });
   drawBuildingIcons();
   buildTapPanel();
+  buildShopPanel();
 }
 
 function drawBuildingIcons(){
@@ -1125,7 +1181,8 @@ function drawBuildingIcons(){
 function buy(i){
   const b=BLDGS[i];
   if(lvls[i]>=b.max||era<b.unlock)return;
-  const cost=Math.round(b.cost*Math.pow(b.mult,lvls[i]));
+  const costRaw=Math.round(b.cost*Math.pow(b.mult,lvls[i]));
+  const cost=Math.round(costRaw*getBoostMult('cost'));
   if(gold<cost)return;
   gold-=cost;
   lvls[i]++;
@@ -1146,13 +1203,14 @@ function handleTap(e){
   const ty=(e.clientY||e.touches?.[0]?.clientY||H/2)-rect.top;
   if(ty>H-105)return;
 
-  gold+=tapPower;totalEarned+=tapPower;
+  const actualTap=tapPower*getBoostMult('tap');
+  gold+=actualTap;totalEarned+=actualTap;
 
-  spawnParticles(tx,ty,3+Math.min(12,Math.floor(tapPower*0.05)),'#f5c842');
+  spawnParticles(tx,ty,3+Math.min(12,Math.floor(actualTap*0.05)),'#f5c842');
   if(Math.random()>0.6)spawnParticles(tx,ty,2,'#ffe880');
 
   const fl=document.createElement('div');
-  fl.className='floater';fl.textContent='+'+fmtNum(tapPower);
+  fl.className='floater';fl.textContent='+'+fmtNum(actualTap);
   fl.style.left=(tx-20)+'px';fl.style.top=(ty-30)+'px';
   document.getElementById('gc').appendChild(fl);
   setTimeout(()=>fl.remove(),1300);
@@ -1165,15 +1223,29 @@ function handleTap(e){
 
 // ─── ERA CHECK ─────────────────────────────────────────
 let prevEra=0;
+
+function getBoostMult(stat){
+  const b=activeBoosts[stat];
+  if(!b)return 1;
+  if(Date.now()>b.expires){delete activeBoosts[stat];return 1;}
+  return b.mult;
+}
+
 function checkEra(){
+  const totalLevels=lvls.reduce((a,b)=>a+b,0);
   let newEra=0;
   for(let i=ERAS.length-1;i>=0;i--){
-    if(totalEarned>=ERAS[i].thresh){newEra=i;break;}
+    if(totalLevels>=ERAS[i].levelThresh){newEra=i;break;}
   }
-  const cur=ERAS[newEra].thresh;
-  const next=newEra<ERAS.length-1?ERAS[newEra+1].thresh:Infinity;
-  const pct=next===Infinity?100:Math.min(100,(totalEarned-cur)/(next-cur)*100);
+  const cur=ERAS[newEra].levelThresh;
+  const next=newEra<ERAS.length-1?ERAS[newEra+1].levelThresh:Infinity;
+  const pct=next===Infinity?100:Math.min(100,(totalLevels-cur)/(next-cur)*100);
   document.getElementById('progress-fill').style.width=pct+'%';
+  const ptxt=document.getElementById('era-progress-txt');
+  if(ptxt){
+    if(next===Infinity) ptxt.textContent='ERA MASSIMA';
+    else ptxt.textContent=totalLevels+'/'+next+' LIV.';
+  }
 
   if(newEra!==era){
     era=newEra;
@@ -1204,12 +1276,13 @@ function fmtNum(n){
 
 function updateUI(){
   document.getElementById('sv-gold').textContent=fmtNum(Math.floor(gold));
-  document.getElementById('sv-pop').textContent=fmtNum(population);
+  document.getElementById('sv-gems').textContent=gems;
   document.getElementById('sv-inc').textContent=fmtNum(Math.round(incomeRate))+'/s';
 
   BLDGS.forEach((b,i)=>{
     const lv=lvls[i];
-    const cost=Math.round(b.cost*Math.pow(b.mult,lv));
+    const costRaw=Math.round(b.cost*Math.pow(b.mult,lv));
+    const cost=Math.round(costRaw*getBoostMult('cost'));
     document.getElementById('bl'+i).textContent=lv;
     const coEl=document.getElementById('bco'+i);
     coEl.textContent=lv>=b.max?'MAX':fmtNum(cost)+' ✦';
@@ -1223,14 +1296,18 @@ function updateUI(){
   });
 
   updateTapPanel();
+  updateShopPanel();
+  updateBoostBar();
 
   const pb=document.getElementById('prestige-btn');
   if(pb){
     const cp=canPrestige();
     pb.style.display=cp?'block':'none';
     if(cp){
-      const nextMult=(1+(prestigeGems+1)*0.5).toFixed(1);
-      pb.textContent=`⭐ Prestige (x${nextMult})`;
+      const totalLevels=lvls.reduce((a,b)=>a+b,0);
+      const gemsEarned=1+Math.floor(totalLevels/50);
+      const nextMult=(1+(prestigeGems+gemsEarned)*0.5).toFixed(1);
+      pb.textContent=`⭐ Prestige (+${gemsEarned}💎 x${nextMult})`;
     }
   }
 }
@@ -1248,15 +1325,16 @@ function notify(msg){
 function loop(ts){
   const dt=Math.min((ts-lastTime)/1000,0.1);
   lastTime=ts;
+  const incomeMult=getBoostMult('income');
   if(incomeRate>0){
-    gold+=incomeRate*dt;
-    totalEarned+=incomeRate*dt;
-    uiThrottle+=dt;
-    if(uiThrottle>=UI_UPDATE_INTERVAL){
-      uiThrottle=0;
-      checkEra();
-      updateUI();
-    }
+    gold+=incomeRate*dt*incomeMult;
+    totalEarned+=incomeRate*dt*incomeMult;
+  }
+  uiThrottle+=dt;
+  if(uiThrottle>=UI_UPDATE_INTERVAL){
+    uiThrottle=0;
+    checkEra();
+    updateUI();
   }
   drawSky(ts);
   drawWorld(ts);
@@ -1276,8 +1354,10 @@ function recalcTapPower(){
 function switchTab(t){
   document.getElementById('brow').style.display=t==='build'?'flex':'none';
   document.getElementById('trow').style.display=t==='tap'?'flex':'none';
+  document.getElementById('srow').style.display=t==='shop'?'flex':'none';
   document.getElementById('btn-build').classList.toggle('active',t==='build');
   document.getElementById('btn-tap').classList.toggle('active',t==='tap');
+  document.getElementById('btn-shop').classList.toggle('active',t==='shop');
 }
 
 // ─── TAP UPGRADES PANEL ────────────────────────────────
@@ -1332,38 +1412,141 @@ function updateTapPanel(){
   });
 }
 
+// ─── SHOP ──────────────────────────────────────────────
+function buildShopPanel(){
+  const srow=document.getElementById('srow');
+  if(!srow)return;
+  srow.innerHTML='';
+  SHOP_ITEMS.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='sc';
+    div.id='si'+item.id;
+    div.onclick=()=>buyShopItem(item.id);
+    let costStr='';
+    if(item.costGold>0) costStr=fmtNum(item.costGold)+' ✦';
+    else if(item.costGems>0) costStr=item.costGems+' 💎';
+    else costStr='Gratis';
+    div.innerHTML=`
+      <div class="sc-sym">${item.sym}</div>
+      <div class="sc-name">${item.name}</div>
+      <div class="sc-desc">${item.desc}</div>
+      <div class="sc-cost">${costStr}</div>
+      <div class="sc-timer" id="stm${item.id}"></div>
+    `;
+    srow.appendChild(div);
+  });
+}
+
+function updateShopPanel(){
+  const now=Date.now();
+  SHOP_ITEMS.forEach(item=>{
+    const card=document.getElementById('si'+item.id);
+    if(!card)return;
+    const timerEl=document.getElementById('stm'+item.id);
+    const canAfford=(item.costGold>0&&gold>=item.costGold)||(item.costGems>0&&gems>=item.costGems)||(item.costGold===0&&item.costGems===0);
+    const boost=item.type==='boost'?activeBoosts[item.stat]:null;
+    const isActive=boost&&now<boost.expires;
+    if(isActive){
+      card.className='sc active-boost';
+      const rem=Math.ceil((boost.expires-now)/1000);
+      const m=Math.floor(rem/60),s=rem%60;
+      if(timerEl)timerEl.textContent=m>0?`${m}m ${s}s`:`${s}s`;
+    } else {
+      card.className=canAfford?'sc affordable':'sc';
+      if(timerEl)timerEl.textContent='';
+    }
+  });
+}
+
+function buyShopItem(id){
+  const item=SHOP_ITEMS.find(s=>s.id===id);
+  if(!item)return;
+  if(item.costGold>0&&gold<item.costGold)return;
+  if(item.costGems>0&&gems<item.costGems)return;
+  if(item.costGold>0)gold-=item.costGold;
+  if(item.costGems>0)gems-=item.costGems;
+  if(item.type==='gem'){
+    gems+=item.amount;
+    notify(`💎 +${item.amount} Gemme Imperiali!`);
+    spawnParticles(W/2,H*0.55,12,'#c060ff');
+    spawnParticles(W/2,H*0.55,8,'#e080ff');
+  } else if(item.type==='boost'){
+    const expires=Date.now()+item.dur*1000;
+    // Stack with existing: take the longer remaining / higher mult
+    const existing=activeBoosts[item.stat];
+    if(existing&&Date.now()<existing.expires&&existing.mult>=item.mult){
+      // Extend duration instead
+      activeBoosts[item.stat]={mult:existing.mult,expires:Math.max(existing.expires,expires)};
+    } else {
+      activeBoosts[item.stat]={mult:item.mult,expires};
+    }
+    const hrs=(item.dur/3600).toFixed(1);
+    notify(`${item.sym} ${item.name} attivato per ${hrs}h!`);
+    spawnParticles(W/2,H*0.55,10,'#40e080');
+  } else if(item.type==='instant'){
+    const bonus=incomeRate*4*3600;
+    gold+=bonus;
+    totalEarned+=bonus;
+    notify(`⏩ +${fmtNum(Math.floor(bonus))} ✦ reddito accelerato!`);
+    spawnParticles(W/2,H*0.55,15,'#f5c842');
+  }
+  checkEra();updateUI();save();
+}
+
+function updateBoostBar(){
+  const bar=document.getElementById('boost-bar');
+  if(!bar)return;
+  bar.innerHTML='';
+  const now=Date.now();
+  const labels={income:'💰 Reddito',tap:'👆 Tap',cost:'🏷️ Costi'};
+  Object.entries(activeBoosts).forEach(([stat,b])=>{
+    if(now>b.expires){delete activeBoosts[stat];return;}
+    const rem=Math.ceil((b.expires-now)/1000);
+    const m=Math.floor(rem/60),s=rem%60;
+    const pill=document.createElement('div');
+    pill.className='boost-pill';
+    pill.textContent=`${labels[stat]||stat} x${b.mult} — ${m>0?m+'m ':''} ${s}s`;
+    bar.appendChild(pill);
+  });
+}
+
 // ─── PRESTIGE ──────────────────────────────────────────
 function canPrestige(){
-  return totalEarned>=PRESTIGE_GOLD_THRESH&&lvls.reduce((a,b)=>a+b,0)>=PRESTIGE_LEVEL_THRESH;
+  return lvls.reduce((a,b)=>a+b,0)>=PRESTIGE_LEVEL_THRESH;
 }
 
 function prestige(){
   if(!canPrestige())return;
-  const nextGems=prestigeGems+1;
-  const nextMult=(1+nextGems*0.5).toFixed(1);
-  if(!confirm(`Prestige: riceverai la ${nextGems}ª Gemma Imperiale e un moltiplicatore permanente x${nextMult}.\nTutto il progresso attuale verrà azzerato. Continuare?`))return;
-  prestigeGems++;
+  const totalLevels=lvls.reduce((a,b)=>a+b,0);
+  const gemsEarned=1+Math.floor(totalLevels/50);
+  const nextMult=(1+(prestigeGems+gemsEarned)*0.5).toFixed(1);
+  if(!confirm(`Prestige: riceverai ${gemsEarned} Gemme Imperiali e un moltiplicatore permanente x${nextMult}.\nTutto il progresso attuale verrà azzerato. Continuare?`))return;
+  prestigeGems+=gemsEarned;
+  gems+=gemsEarned;
   gold=0;totalEarned=0;population=12;incomeRate=0;era=0;
   lvls=[0,0,0,0,0,0];tapBought=[false,false,false,false,false,false];
+  activeBoosts={};
   recalcTapPower();
   initTerrain();
   document.getElementById('era-name').textContent=ERAS[0].name;
   document.getElementById('progress-fill').style.width='0%';
   buildPanel();
   checkEra();updateUI();
-  notify(`✦ Prestige! Gemme: ${prestigeGems} — Moltiplicatore: x${1+prestigeGems*0.5} ✦`);
+  notify(`✦ Prestige! +${gemsEarned} 💎 — Moltiplicatore: x${nextMult} ✦`);
   save();
 }
 
 // ─── SAVE / LOAD ───────────────────────────────────────
-const SAVE_KEY='tapEmpire_v2';
+const SAVE_KEY='tapEmpire_v3';
 
 function save(){
   try{
     localStorage.setItem(SAVE_KEY,JSON.stringify({
       gold,totalEarned,population,incomeRate,era,
       lvls:[...lvls],tapBought:[...tapBought],
-      prestigeGems,savedAt:Date.now()
+      prestigeGems,gems,
+      activeBoosts:JSON.parse(JSON.stringify(activeBoosts)),
+      savedAt:Date.now()
     }));
   }catch(e){}
 }
@@ -1381,6 +1564,11 @@ function load(){
     lvls=Array.isArray(d.lvls)?d.lvls.map(v=>v||0):[0,0,0,0,0,0];
     tapBought=Array.isArray(d.tapBought)?d.tapBought.map(v=>!!v):[false,false,false,false,false,false];
     prestigeGems=d.prestigeGems||0;
+    gems=d.gems||0;
+    activeBoosts=d.activeBoosts||{};
+    // Remove expired boosts from loaded state
+    const now=Date.now();
+    Object.keys(activeBoosts).forEach(k=>{if(now>activeBoosts[k].expires)delete activeBoosts[k];});
     recalcTapPower();
     // Offline income (max 4 hours)
     if(d.savedAt&&incomeRate>0){
