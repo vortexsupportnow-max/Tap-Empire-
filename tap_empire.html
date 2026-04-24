@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tap Empire — Build. Expand. Survive.</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#050810}
@@ -345,6 +347,8 @@ const PRESTIGE_LEVEL_THRESH = 160;    // total building levels needed to prestig
 let tapBought=[false,false,false,false,false,false];
 let prestigeGems=0;
 let gems=0;
+let hut3DCanvas=null;
+let hut3DIconCanvas=null;
 let activeBoosts={};
 let uiThrottle=0;
 let gold=0,totalEarned=0,population=12,incomeRate=0;
@@ -427,6 +431,53 @@ function initTerrain(){
       size:rng(0.8,1.1),
     });
   }
+}
+
+// ─── 3D MODEL (GLB HUT) ────────────────────────────────
+function setup3DModel(){
+  if(typeof THREE==='undefined') return;
+  let loader;
+  try{ loader=new THREE.GLTFLoader(); }catch(e){ console.warn('[3D hut] THREE.GLTFLoader unavailable'); return; }
+  const GLB='Copilot3D-5e231abd-956f-4204-8b4f-db839c50b1d2.glb';
+  const SW=128,SH=128;
+  const offEl=document.createElement('canvas');
+  offEl.width=SW;offEl.height=SH;
+  const renderer=new THREE.WebGLRenderer({canvas:offEl,alpha:true,antialias:true,preserveDrawingBuffer:true});
+  renderer.setSize(SW,SH);
+  renderer.setClearColor(0x000000,0);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(38,SW/SH,0.01,200);
+  camera.position.set(1.8,1.6,2.4);
+  camera.lookAt(0,0.3,0);
+  scene.add(new THREE.AmbientLight(0xffd8a0,0.8));
+  const sun=new THREE.DirectionalLight(0xfff0c0,1.5);
+  sun.position.set(3,5,2);scene.add(sun);
+  const fill=new THREE.DirectionalLight(0x8090c0,0.4);
+  fill.position.set(-2,1,-1);scene.add(fill);
+  loader.load(GLB,function(gltf){
+    const model=gltf.scene;
+    const box=new THREE.Box3().setFromObject(model);
+    const center=box.getCenter(new THREE.Vector3());
+    const size=box.getSize(new THREE.Vector3());
+    const maxDim=Math.max(size.x,size.y,size.z)||1;
+    model.position.sub(center);
+    model.position.y+=size.y/2;
+    model.scale.setScalar(1.8/maxDim);
+    scene.add(model);
+    renderer.render(scene,camera);
+    // Capture world sprite
+    hut3DCanvas=document.createElement('canvas');
+    hut3DCanvas.width=SW;hut3DCanvas.height=SH;
+    hut3DCanvas.getContext('2d').drawImage(offEl,0,0);
+    // Capture icon sprite
+    hut3DIconCanvas=document.createElement('canvas');
+    hut3DIconCanvas.width=40;hut3DIconCanvas.height=40;
+    hut3DIconCanvas.getContext('2d').drawImage(offEl,0,0,40,40);
+    drawBuildingIcons();
+    try{renderer.dispose();}catch(e){}
+  },undefined,function(err){
+    console.warn('[3D hut] Failed to load GLB from '+GLB+', falling back to 2D rendering:',err);
+  });
 }
 
 // ─── DRAW SKY ──────────────────────────────────────────
@@ -760,6 +811,23 @@ function drawBuilding(b,t){
   }
 
   if(e<=1){
+    if(hut3DCanvas){
+      // 3D sprite for neolithic / bronze huts
+      const sw=(22+seed*14)*sc, sh=(28+seed2*12)*sc;
+      xWorld.drawImage(hut3DCanvas,x-sw/2,y-sh,sw,sh);
+      // Keep chimney smoke animation on top of sprite
+      if(seed>0.6){
+        const csx=x+sw*0.28;
+        xWorld.fillStyle='rgba(100,100,100,0.2)';
+        for(let s=0;s<3;s++){
+          const sy2=y-sh-s*10;
+          const sr=4*sc*(s+1);
+          xWorld.beginPath();
+          xWorld.arc(csx+Math.sin(t*0.001+s)*3,sy2,sr,0,Math.PI*2);
+          xWorld.fill();
+        }
+      }
+    } else {
     // NEOLITHIC / BRONZE huts
     const w=(18+seed*12)*sc, bh=(14+seed2*10)*sc;
     const wallColors=['#7a5428','#8a6030','#6a4820','#9a6838'];
@@ -796,6 +864,7 @@ function drawBuilding(b,t){
         xWorld.arc(csx+Math.sin(t*0.001+s)*3,sy2,sr,0,Math.PI*2);
         xWorld.fill();
       }
+    }
     }
 
   } else if(e===2){
@@ -1173,7 +1242,11 @@ function drawBuildingIcons(){
     if(!cv)return;
     const cx=cv.getContext('2d');
     cx.clearRect(0,0,40,40);
-    fn(cx);
+    if(i===0&&hut3DIconCanvas){
+      cx.drawImage(hut3DIconCanvas,0,0,40,40);
+    } else {
+      fn(cx);
+    }
   });
 }
 
@@ -1597,6 +1670,7 @@ document.getElementById('era-name').textContent=ERAS[era].name;
 buildPanel();
 checkEra();
 updateUI();
+setup3DModel();
 setInterval(save,AUTOSAVE_INTERVAL);
 window.addEventListener('beforeunload',save);
 requestAnimationFrame(ts=>{lastTime=ts;requestAnimationFrame(loop);});
