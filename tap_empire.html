@@ -435,7 +435,9 @@ function initTerrain(){
 
 // ─── 3D MODEL (GLB HUT) ────────────────────────────────
 function setup3DModel(){
-  if(typeof THREE==='undefined'||typeof THREE.GLTFLoader==='undefined')return;
+  if(typeof THREE==='undefined') return;
+  let loader;
+  try{ loader=new THREE.GLTFLoader(); }catch(e){ console.warn('[3D hut] THREE.GLTFLoader unavailable'); return; }
   const GLB='Copilot3D-5e231abd-956f-4204-8b4f-db839c50b1d2.glb';
   const SW=128,SH=128;
   const offEl=document.createElement('canvas');
@@ -452,7 +454,6 @@ function setup3DModel(){
   sun.position.set(3,5,2);scene.add(sun);
   const fill=new THREE.DirectionalLight(0x8090c0,0.4);
   fill.position.set(-2,1,-1);scene.add(fill);
-  const loader=new THREE.GLTFLoader();
   loader.load(GLB,function(gltf){
     const model=gltf.scene;
     const box=new THREE.Box3().setFromObject(model);
@@ -475,7 +476,7 @@ function setup3DModel(){
     drawBuildingIcons();
     try{renderer.dispose();}catch(e){}
   },undefined,function(err){
-    console.warn('[3D hut] GLB load failed:',err);
+    console.warn('[3D hut] Failed to load GLB from '+GLB+', falling back to 2D rendering:',err);
   });
 }
 
