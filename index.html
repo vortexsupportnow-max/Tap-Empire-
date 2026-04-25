@@ -252,10 +252,273 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   font-size:8px;color:rgba(245,200,66,0.38);letter-spacing:1px;margin-top:2px;
   font-family:'Cinzel',serif;
 }
+
+/* ═══════════════════════════════════════════ LANDING PAGE ══ */
+#landing{
+  position:fixed;inset:0;z-index:9999;
+  background:#000;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;
+}
+#landing.l-hide{
+  animation:landingExit 0.85s cubic-bezier(0.7,0,1,1) forwards;
+  pointer-events:none;
+}
+@keyframes landingExit{
+  0%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(1.07)}
+}
+#lCanvas{
+  position:absolute;inset:0;z-index:0;
+  width:100%;height:100%;
+}
+.l-scanlines{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,rgba(0,0,0,0.13) 2px,rgba(0,0,0,0.13) 4px
+  );
+}
+.l-corner{
+  position:absolute;width:28px;height:28px;
+  border-color:#C6FF33;border-style:solid;
+  opacity:0.35;z-index:2;
+  transition:opacity 0.3s;
+}
+.l-corner.tl{top:18px;left:18px;border-width:2px 0 0 2px;}
+.l-corner.tr{top:18px;right:18px;border-width:2px 2px 0 0;}
+.l-corner.bl{bottom:18px;left:18px;border-width:0 0 2px 2px;}
+.l-corner.br{bottom:18px;right:18px;border-width:0 2px 2px 0;}
+#landing:hover .l-corner{opacity:0.6;}
+.l-content{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:20px 24px 28px;
+  max-width:660px;
+  width:100%;
+}
+.l-title{
+  font-family:'Cinzel Decorative',serif;
+  line-height:1.05;
+  margin-bottom:6px;
+}
+.l-tap{
+  display:block;
+  font-size:clamp(52px,13vw,104px);
+  color:#C6FF33;
+  letter-spacing:0.12em;
+  text-shadow:0 0 40px rgba(198,255,51,0.9),0 0 80px rgba(198,255,51,0.5),0 0 160px rgba(198,255,51,0.2);
+  animation:tapGlow 2.6s ease-in-out infinite alternate;
+}
+.l-empire{
+  display:block;
+  font-size:clamp(18px,4.5vw,38px);
+  color:#fff;
+  letter-spacing:0.55em;
+  text-shadow:0 0 20px rgba(255,255,255,0.4);
+  margin-top:-6px;
+  padding-right:0.55em;
+}
+@keyframes tapGlow{
+  from{text-shadow:0 0 30px rgba(198,255,51,0.7),0 0 60px rgba(198,255,51,0.35);}
+  to{text-shadow:0 0 70px rgba(198,255,51,1),0 0 130px rgba(198,255,51,0.7),0 0 220px rgba(198,255,51,0.25);}
+}
+.l-divider{
+  width:140px;height:1px;
+  background:linear-gradient(90deg,transparent,#C6FF33,transparent);
+  margin:14px auto 16px;
+  box-shadow:0 0 10px rgba(198,255,51,0.5);
+}
+.l-tagline{
+  font-family:'IM Fell English',serif;
+  font-style:italic;
+  font-size:clamp(13px,2.6vw,19px);
+  color:rgba(255,255,255,0.58);
+  letter-spacing:3px;
+  margin-bottom:14px;
+}
+.l-desc{
+  font-family:'Cinzel',serif;
+  font-size:clamp(10px,1.8vw,13px);
+  color:rgba(255,255,255,0.62);
+  line-height:2;
+  letter-spacing:0.5px;
+  margin-bottom:26px;
+  max-width:500px;
+  margin-left:auto;margin-right:auto;
+}
+.l-feats{
+  display:flex;gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:34px;
+}
+.l-feat{
+  flex:0 0 auto;
+  min-width:104px;
+  border:1px solid rgba(198,255,51,0.22);
+  background:rgba(198,255,51,0.03);
+  border-radius:12px;
+  padding:12px 14px 10px;
+  transition:all 0.3s ease;
+  cursor:default;
+}
+.l-feat:hover{
+  border-color:rgba(198,255,51,0.65);
+  background:rgba(198,255,51,0.08);
+  transform:translateY(-6px);
+  box-shadow:0 8px 26px rgba(198,255,51,0.15),0 0 0 1px rgba(198,255,51,0.08);
+}
+.l-feat-icon{font-size:22px;line-height:1;margin-bottom:6px;}
+.l-feat-name{
+  font-family:'Cinzel',serif;font-size:8px;
+  color:#C6FF33;letter-spacing:1.5px;
+  text-shadow:0 0 8px rgba(198,255,51,0.4);
+}
+.l-feat-sub{
+  font-family:'Cinzel',serif;font-size:7px;
+  color:rgba(255,255,255,0.38);
+  margin-top:3px;
+}
+.l-play{
+  display:inline-block;
+  padding:16px 54px;
+  border:2px solid #C6FF33;
+  border-radius:50px;
+  background:transparent;
+  color:#C6FF33;
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(13px,2.4vw,17px);
+  letter-spacing:5px;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:color 0.32s ease,transform 0.2s ease;
+  animation:playPulse 3s ease-in-out infinite;
+  text-shadow:0 0 12px rgba(198,255,51,0.55);
+  box-shadow:0 0 30px rgba(198,255,51,0.18),inset 0 0 30px rgba(198,255,51,0.02);
+}
+.l-play::before{
+  content:'';
+  position:absolute;inset:0;
+  background:#C6FF33;
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform 0.38s cubic-bezier(0.7,0,0.3,1);
+  z-index:-1;
+}
+.l-play:hover{color:#000;text-shadow:none;transform:scale(1.04);}
+.l-play:hover::before{transform:scaleX(1);}
+@keyframes playPulse{
+  0%,100%{box-shadow:0 0 20px rgba(198,255,51,0.22),inset 0 0 20px rgba(198,255,51,0.02);}
+  50%{box-shadow:0 0 55px rgba(198,255,51,0.55),0 0 110px rgba(198,255,51,0.18),inset 0 0 30px rgba(198,255,51,0.05);}
+}
+.l-version{
+  position:absolute;bottom:16px;right:18px;
+  font-family:'Cinzel',serif;font-size:8px;
+  letter-spacing:2px;color:rgba(198,255,51,0.28);
+  pointer-events:none;z-index:2;
+}
+
+/* ═══════════════════════════════════════ MOBILE HUD FIXES ══ */
+@media(max-width:520px){
+  #hud{padding:8px 10px 6px;}
+  #era-name{font-size:10px;letter-spacing:2px;}
+  #era-progress-txt{font-size:7px;}
+  .stats{gap:5px;}
+  .stat{padding:4px 8px 4px 6px;border-radius:18px;}
+  .stat svg{width:14px;height:14px;}
+  .stat-val{font-size:11px;min-width:28px;}
+  .stat-lbl{font-size:6.5px;letter-spacing:1px;}
+  .tab-btn{font-size:8px;padding:5px 4px;letter-spacing:0.5px;}
+  .bc{min-width:72px;padding:6px 5px 5px;}
+  .bc-icon{width:32px;height:32px;}
+  .bc-icon canvas{width:32px!important;height:32px!important;}
+  .bc-name{font-size:7px;}
+  .bc-inc{font-size:7.5px;}
+  .bc-cost{font-size:8.5px;}
+  .bc-lv{font-size:7.5px;top:4px;right:5px;}
+  #hint{font-size:12px;bottom:130px;}
+  #notif{font-size:10px;padding:7px 16px;top:52px;}
+  .floater{font-size:13px;}
+  #boost-bar{top:48px;}
+  .boost-pill{font-size:7px;padding:2px 7px;}
+  .tc{min-width:70px;padding:6px 5px 5px;}
+  .tc-sym{font-size:20px;}
+  .tc-name{font-size:7px;}
+  .sc{min-width:78px;padding:6px 5px 5px;}
+  .sc-sym{font-size:18px;}
+  .sc-name{font-size:7px;}
+  .sc-desc{font-size:6.5px;}
+  #beta-banner{font-size:8px;padding:2px 8px;}
+  #prestige-btn{font-size:9px;padding:6px 11px;bottom:110px;}
+  /* Landing page mobile */
+  .l-feat{min-width:86px;padding:10px 10px 8px;}
+  .l-feat-icon{font-size:18px;}
+  .l-play{padding:14px 38px;letter-spacing:3px;}
+  .l-corner{width:20px;height:20px;}
+}
+@media(max-width:360px){
+  .stats{gap:3px;}
+  .stat{padding:3px 6px 3px 5px;}
+  .stat svg{width:12px;height:12px;}
+  .stat-val{font-size:10px;min-width:22px;}
+  .stat-lbl{display:none;}
+  #era-name{font-size:9px;}
+  .l-feats{gap:7px;}
+  .l-feat{min-width:76px;}
+}
 </style>
 </head>
 <body>
-<div id="gc">
+
+<!-- ═══════════════════════ LANDING PAGE ═══════════════════ -->
+<div id="landing">
+  <canvas id="lCanvas"></canvas>
+  <div class="l-scanlines"></div>
+  <div class="l-corner tl"></div>
+  <div class="l-corner tr"></div>
+  <div class="l-corner bl"></div>
+  <div class="l-corner br"></div>
+  <div class="l-content">
+    <div class="l-title">
+      <span class="l-tap">TAP</span>
+      <span class="l-empire">EMPIRE</span>
+    </div>
+    <div class="l-divider"></div>
+    <div class="l-tagline">Costruisci · Espandi · Sopravvivi</div>
+    <div class="l-desc">
+      Guida la tua civiltà attraverso 6 ere storiche.<br>
+      Dal Neolitico all'Era Moderna: costruisci edifici,<br>potenzia i tap e domina il mondo.
+    </div>
+    <div class="l-feats">
+      <div class="l-feat">
+        <div class="l-feat-icon">🏛</div>
+        <div class="l-feat-name">6 ERE</div>
+        <div class="l-feat-sub">Dalla pietra al futuro</div>
+      </div>
+      <div class="l-feat">
+        <div class="l-feat-icon">🏗</div>
+        <div class="l-feat-name">COSTRUZIONI</div>
+        <div class="l-feat-sub">6 edifici evolutivi</div>
+      </div>
+      <div class="l-feat">
+        <div class="l-feat-icon">⚡</div>
+        <div class="l-feat-name">TAP POWER</div>
+        <div class="l-feat-sub">Potenzia ogni tocco</div>
+      </div>
+      <div class="l-feat">
+        <div class="l-feat-icon">⭐</div>
+        <div class="l-feat-name">PRESTIGE</div>
+        <div class="l-feat-sub">Ricomincia più forte</div>
+      </div>
+    </div>
+    <button class="l-play" onclick="enterGame()">▶ &nbsp;GIOCA ORA</button>
+  </div>
+  <div class="l-version">BETA v1.0</div>
+</div>
+
+<div id="gc" style="display:none">
   <div id="progress"><div id="progress-fill"></div></div>
   <canvas id="cSky"></canvas>
   <canvas id="cWorld"></canvas>
@@ -303,7 +566,102 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 </div>
 
 <script>
-// ─── DATA ──────────────────────────────────────────────
+// ─── LANDING PAGE ANIMATION ────────────────────────────
+(function(){
+  var canvas=document.getElementById('lCanvas');
+  var ctx=canvas.getContext('2d');
+  var lW=0,lH=0,pts=[],lRaf;
+  var NEON='#C6FF33',NEON_R=198,NEON_G=255,NEON_B=51;
+  var N=100;
+
+  function resizeL(){
+    lW=canvas.width=window.innerWidth;
+    lH=canvas.height=window.innerHeight;
+  }
+
+  function initPts(){
+    pts=[];
+    for(var i=0;i<N;i++){
+      pts.push({
+        x:Math.random()*lW,
+        y:Math.random()*lH,
+        vx:(Math.random()-0.5)*0.55,
+        vy:-Math.random()*0.45-0.08,
+        r:Math.random()*1.6+0.5,
+        a:Math.random()*0.55+0.2,
+        ph:Math.random()*Math.PI*2
+      });
+    }
+  }
+
+  function drawL(){
+    lRaf=requestAnimationFrame(drawL);
+    ctx.clearRect(0,0,lW,lH);
+
+    // subtle grid
+    var gs=70;
+    ctx.lineWidth=0.5;
+    var ga='rgba('+NEON_R+','+NEON_G+','+NEON_B+',0.04)';
+    ctx.strokeStyle=ga;
+    for(var gx=0;gx<=lW;gx+=gs){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,lH);ctx.stroke();}
+    for(var gy=0;gy<=lH;gy+=gs){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(lW,gy);ctx.stroke();}
+
+    // move & draw particles
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i];
+      p.x+=p.vx; p.y+=p.vy; p.ph+=0.022;
+      if(p.y<-12)p.y=lH+12;
+      if(p.x<-12)p.x=lW+12;
+      if(p.x>lW+12)p.x=-12;
+      var a2=p.a*(0.65+0.35*Math.sin(p.ph));
+      // core dot
+      ctx.globalAlpha=a2;
+      ctx.fillStyle=NEON;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+      // glow halo for larger dots
+      if(p.r>1.1){
+        var gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*5);
+        gr.addColorStop(0,'rgba('+NEON_R+','+NEON_G+','+NEON_B+','+(a2*0.35)+')');
+        gr.addColorStop(1,'rgba('+NEON_R+','+NEON_G+','+NEON_B+',0)');
+        ctx.fillStyle=gr;
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r*5,0,Math.PI*2);ctx.fill();
+      }
+    }
+
+    // connecting lines
+    ctx.lineWidth=0.6;
+    for(var i=0;i<pts.length;i++){
+      for(var j=i+1;j<pts.length;j++){
+        var dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+        var dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<130){
+          ctx.globalAlpha=(1-dist/130)*0.28;
+          ctx.strokeStyle=NEON;
+          ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();
+        }
+      }
+    }
+    ctx.globalAlpha=1;
+  }
+
+  window.addEventListener('resize',function(){resizeL();initPts();});
+  resizeL();initPts();drawL();
+
+  window._stopLanding=function(){cancelAnimationFrame(lRaf);};
+})();
+
+// ─── ENTER GAME ────────────────────────────────────────
+function enterGame(){
+  var landing=document.getElementById('landing');
+  landing.classList.add('l-hide');
+  var gc=document.getElementById('gc');
+  gc.style.display='flex';
+  if(window._stopLanding)window._stopLanding();
+  setTimeout(function(){landing.style.display='none';},900);
+  initGame();
+}
+
+
 const ERAS=[
   {name:'Era Neolitica',    levelThresh:0,
    sky:['#060c24','#0f1e48','#1e3870','#3c6098','#98b8d8','#e8c870','#d87828'],
@@ -1676,19 +2034,20 @@ function load(){
 }
 
 // ─── INIT ──────────────────────────────────────────────
-document.getElementById('tap-zone').addEventListener('click',handleTap);
-document.getElementById('tap-zone').addEventListener('touchstart',(e)=>{e.preventDefault();handleTap(e);},{passive:false});
-
-load();
-resize();
-document.getElementById('era-name').textContent=ERAS[era].name;
-buildPanel();
-checkEra();
-updateUI();
-setup3DModel();
-setInterval(save,AUTOSAVE_INTERVAL);
-window.addEventListener('beforeunload',save);
-requestAnimationFrame(ts=>{lastTime=ts;requestAnimationFrame(loop);});
+function initGame(){
+  document.getElementById('tap-zone').addEventListener('click',handleTap);
+  document.getElementById('tap-zone').addEventListener('touchstart',(e)=>{e.preventDefault();handleTap(e);},{passive:false});
+  load();
+  resize();
+  document.getElementById('era-name').textContent=ERAS[era].name;
+  buildPanel();
+  checkEra();
+  updateUI();
+  setup3DModel();
+  setInterval(save,AUTOSAVE_INTERVAL);
+  window.addEventListener('beforeunload',save);
+  requestAnimationFrame(ts=>{lastTime=ts;requestAnimationFrame(loop);});
+}
 </script>
 </body>
 </html>
