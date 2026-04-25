@@ -9,7 +9,8 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#050810}
+html,body{width:100%;background:#050810}
+body.game-active{height:100%;overflow:hidden}
 
 #gc{
   width:100vw;height:100vh;
@@ -255,13 +256,17 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 
 /* ═══════════════════════════════════════════ LANDING PAGE ══ */
 #landing{
-  position:fixed;inset:0;z-index:9999;
+  position:relative;width:100%;height:100vh;
   background:#000;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   overflow:hidden;
 }
 #landing.l-hide{
+  animation:landingExit 0.85s cubic-bezier(0.7,0,1,1) forwards;
+  pointer-events:none;
+}
+#info-site.l-hide{
   animation:landingExit 0.85s cubic-bezier(0.7,0,1,1) forwards;
   pointer-events:none;
 }
@@ -468,9 +473,261 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   .l-feats{gap:7px;}
   .l-feat{min-width:76px;}
 }
+
+/* ═══════════════════════════════════════ SCROLL HINT ARROW ══ */
+.l-scroll-hint{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;
+  color:rgba(198,255,51,0.45);
+  pointer-events:none;
+  animation:arrowBounce 2s ease-in-out infinite;
+}
+.l-scroll-hint svg{
+  width:20px;height:20px;opacity:0.55;
+}
+@keyframes arrowBounce{
+  0%,100%{transform:translateX(-50%) translateY(0);}
+  50%{transform:translateX(-50%) translateY(8px);}
+}
+
+/* ═══════════════════════════════════════════ GUIDE PAGES ══ */
+#info-site{position:relative;}
+
+#guide-pages{
+  font-family:'Cinzel',serif;
+  transition:background 0.45s ease,color 0.45s ease;
+}
+
+/* ── Dark theme (default) ── */
+#guide-pages.gp-dark{
+  background:#060c1e;
+  color:rgba(255,255,255,0.85);
+}
+#guide-pages.gp-dark .gp-topbar{
+  background:#060c1e;
+  border-bottom:1px solid rgba(198,255,51,0.15);
+}
+#guide-pages.gp-dark .gp-section:nth-child(even){
+  background:#020509;
+}
+#guide-pages.gp-dark .gp-card{
+  background:rgba(198,255,51,0.03);
+  border:1px solid rgba(198,255,51,0.14);
+}
+#guide-pages.gp-dark .gp-card:hover{
+  background:rgba(198,255,51,0.07);
+  border-color:rgba(198,255,51,0.4);
+  box-shadow:0 6px 24px rgba(198,255,51,0.1);
+}
+#guide-pages.gp-dark .gp-section-title{color:#C6FF33;}
+#guide-pages.gp-dark .gp-section-sub{color:rgba(255,255,255,0.45);}
+#guide-pages.gp-dark .gp-card-title{color:#C6FF33;}
+#guide-pages.gp-dark .gp-card-body{color:rgba(255,255,255,0.65);}
+#guide-pages.gp-dark .gp-step-num{
+  background:rgba(198,255,51,0.12);
+  color:#C6FF33;
+  border:1px solid rgba(198,255,51,0.3);
+}
+#guide-pages.gp-dark .gp-era-badge{
+  background:rgba(198,255,51,0.08);
+  border:1px solid rgba(198,255,51,0.2);
+}
+#guide-pages.gp-dark .gp-era-badge-name{color:#C6FF33;}
+#guide-pages.gp-dark .gp-divider{background:linear-gradient(90deg,transparent,rgba(198,255,51,0.4),transparent);}
+#guide-pages.gp-dark #theme-toggle{
+  background:rgba(198,255,51,0.07);
+  border:1px solid rgba(198,255,51,0.3);
+  color:#C6FF33;
+}
+#guide-pages.gp-dark #theme-toggle:hover{background:rgba(198,255,51,0.15);}
+#guide-pages.gp-dark .gp-cta{background:#020509;}
+#guide-pages.gp-dark .gp-cta .l-play{
+  border-color:#C6FF33;color:#C6FF33;
+}
+#guide-pages.gp-dark .gp-cta .l-play::before{background:#C6FF33;}
+#guide-pages.gp-dark .gp-cta .l-play:hover{color:#000;}
+#guide-pages.gp-dark .gp-highlight{color:#C6FF33;}
+
+/* ── Light theme ── */
+#guide-pages.gp-light{
+  background:#f5f7ef;
+  color:#1a1a1a;
+}
+#guide-pages.gp-light .gp-topbar{
+  background:#f5f7ef;
+  border-bottom:1px solid rgba(0,0,0,0.1);
+}
+#guide-pages.gp-light .gp-section:nth-child(even){
+  background:#eaecdf;
+}
+#guide-pages.gp-light .gp-card{
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.1);
+  box-shadow:0 2px 12px rgba(0,0,0,0.05);
+}
+#guide-pages.gp-light .gp-card:hover{
+  border-color:rgba(0,0,0,0.25);
+  box-shadow:0 6px 24px rgba(0,0,0,0.1);
+  transform:translateY(-4px);
+}
+#guide-pages.gp-light .gp-section-title{color:#3a5a00;}
+#guide-pages.gp-light .gp-section-sub{color:rgba(0,0,0,0.45);}
+#guide-pages.gp-light .gp-card-title{color:#3a5a00;}
+#guide-pages.gp-light .gp-card-body{color:#444;}
+#guide-pages.gp-light .gp-step-num{
+  background:rgba(80,120,0,0.1);
+  color:#3a5a00;
+  border:1px solid rgba(80,120,0,0.25);
+}
+#guide-pages.gp-light .gp-era-badge{
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.12);
+}
+#guide-pages.gp-light .gp-era-badge-name{color:#3a5a00;}
+#guide-pages.gp-light .gp-divider{background:linear-gradient(90deg,transparent,rgba(80,120,0,0.35),transparent);}
+#guide-pages.gp-light #theme-toggle{
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.18);
+  color:#3a5a00;
+}
+#guide-pages.gp-light #theme-toggle:hover{background:#edf0e2;}
+#guide-pages.gp-light .gp-cta{background:#eaecdf;}
+#guide-pages.gp-light .gp-cta .l-play{
+  border-color:#3a5a00;color:#3a5a00;text-shadow:none;
+  box-shadow:0 0 20px rgba(80,120,0,0.15);
+  animation:none;
+}
+#guide-pages.gp-light .gp-cta .l-play::before{background:#3a5a00;}
+#guide-pages.gp-light .gp-cta .l-play:hover{color:#fff;}
+#guide-pages.gp-light .gp-highlight{color:#3a5a00;}
+
+/* ── Shared structure ── */
+.gp-topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;justify-content:flex-end;
+  padding:10px 18px;
+  backdrop-filter:blur(10px);
+  transition:background 0.45s ease;
+}
+#theme-toggle{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 16px;border-radius:30px;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:1.5px;
+  cursor:pointer;transition:all 0.25s ease;
+}
+.gp-section{
+  padding:64px 24px;
+  transition:background 0.45s ease;
+}
+.gp-section-header{
+  text-align:center;
+  margin-bottom:40px;
+}
+.gp-section-icon{
+  font-size:36px;line-height:1;margin-bottom:12px;
+}
+.gp-section-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(16px,3.5vw,26px);
+  letter-spacing:4px;
+  margin-bottom:8px;
+  transition:color 0.45s ease;
+}
+.gp-section-sub{
+  font-family:'IM Fell English',serif;
+  font-style:italic;
+  font-size:clamp(12px,2vw,15px);
+  letter-spacing:2px;
+  transition:color 0.45s ease;
+}
+.gp-divider{
+  height:1px;width:120px;
+  margin:16px auto 0;
+  transition:background 0.45s ease;
+}
+.gp-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  max-width:900px;
+  margin:0 auto;
+}
+.gp-grid-3{
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+}
+.gp-card{
+  border-radius:16px;padding:22px 20px;
+  transition:all 0.3s ease;
+  cursor:default;
+}
+.gp-card-icon{font-size:28px;line-height:1;margin-bottom:10px;}
+.gp-card-title{
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;
+  font-weight:700;margin-bottom:8px;
+  transition:color 0.45s ease;
+}
+.gp-card-body{
+  font-family:'IM Fell English',serif;
+  font-size:clamp(12px,1.8vw,14px);
+  line-height:1.75;
+  transition:color 0.45s ease;
+}
+.gp-step-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;
+  font-size:13px;font-weight:700;
+  margin-bottom:10px;
+  transition:all 0.45s ease;
+}
+.gp-era-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:12px;
+  max-width:900px;margin:0 auto;
+}
+.gp-era-badge{
+  border-radius:14px;padding:16px 12px;
+  text-align:center;
+  transition:all 0.3s ease;
+  cursor:default;
+}
+.gp-era-badge:hover{transform:translateY(-5px);}
+.gp-era-badge-icon{font-size:26px;margin-bottom:8px;}
+.gp-era-badge-name{
+  font-family:'Cinzel',serif;font-size:9px;
+  letter-spacing:1.5px;font-weight:700;
+  margin-bottom:4px;
+  transition:color 0.45s ease;
+}
+.gp-era-badge-sub{
+  font-family:'IM Fell English',serif;font-style:italic;
+  font-size:11px;opacity:0.55;
+}
+.gp-highlight{font-weight:700;transition:color 0.45s ease;}
+.gp-cta{
+  padding:60px 24px;
+  text-align:center;
+  transition:background 0.45s ease;
+}
+.gp-cta p{
+  font-family:'IM Fell English',serif;font-style:italic;
+  font-size:clamp(13px,2.2vw,17px);letter-spacing:2px;
+  opacity:0.6;margin-bottom:28px;
+}
+@media(max-width:520px){
+  .gp-section{padding:48px 16px;}
+  .gp-card{padding:16px 14px;}
+  .gp-era-badge{padding:12px 8px;}
+  .gp-era-grid{grid-template-columns:repeat(3,1fr);}
+}
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════ INFO SITE (landing + guide) ═══════════════════ -->
+<div id="info-site">
 
 <!-- ═══════════════════════ LANDING PAGE ═══════════════════ -->
 <div id="landing">
@@ -516,7 +773,207 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
     <button class="l-play" onclick="enterGame()">▶ &nbsp;GIOCA ORA</button>
   </div>
   <div class="l-version">BETA v1.0</div>
+  <!-- Scroll hint arrow -->
+  <div class="l-scroll-hint">
+    <span>SCOPRI IL GIOCO</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
 </div>
+
+<!-- ═══════════════════════ GUIDE PAGES ═══════════════════ -->
+<div id="guide-pages" class="gp-dark">
+
+  <!-- Sticky theme toggle bar -->
+  <div class="gp-topbar">
+    <button id="theme-toggle" onclick="toggleGuideTheme()">
+      <span id="theme-icon">☀️</span>
+      <span id="theme-label">TEMA CHIARO</span>
+    </button>
+  </div>
+
+  <!-- ── Section 1: Come si Gioca ── -->
+  <section class="gp-section">
+    <div class="gp-section-header">
+      <div class="gp-section-icon">🎮</div>
+      <div class="gp-section-title">COME SI GIOCA</div>
+      <div class="gp-section-sub">Tre semplici mosse per conquistare il mondo</div>
+      <div class="gp-divider"></div>
+    </div>
+    <div class="gp-grid gp-grid-3">
+      <div class="gp-card">
+        <div class="gp-step-num">1</div>
+        <div class="gp-card-icon">👆</div>
+        <div class="gp-card-title">TOCCA LO SCHERMO</div>
+        <div class="gp-card-body">Ogni tap genera <span class="gp-highlight">Oro</span>. Più tocchi, più guadagni. Potenzia il tap per moltiplicare il bottino a ogni pressione.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-step-num">2</div>
+        <div class="gp-card-icon">🏗</div>
+        <div class="gp-card-title">COSTRUISCI EDIFICI</div>
+        <div class="gp-card-body">Usa l'oro per erigere strutture. Ogni edificio genera un <span class="gp-highlight">reddito passivo</span> al secondo, anche quando non stai toccando.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-step-num">3</div>
+        <div class="gp-card-icon">🏛</div>
+        <div class="gp-card-title">AVANZA NELLE ERE</div>
+        <div class="gp-card-body">Accumula abbastanza livelli e la tua civiltà <span class="gp-highlight">avanza nell'era successiva</span>, sbloccando edifici e potenziamenti esclusivi.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 2: Le 6 Ere ── -->
+  <section class="gp-section">
+    <div class="gp-section-header">
+      <div class="gp-section-icon">🌍</div>
+      <div class="gp-section-title">LE 6 ERE STORICHE</div>
+      <div class="gp-section-sub">Guida la tua civiltà dalla pietra al futuro</div>
+      <div class="gp-divider"></div>
+    </div>
+    <div class="gp-era-grid">
+      <div class="gp-era-badge">
+        <div class="gp-era-badge-icon">🪨</div>
+        <div class="gp-era-badge-name">NEOLITICA</div>
+        <div class="gp-era-badge-sub">Liv. 0+</div>
+      </div>
+      <div class="gp-era-badge">
+        <div class="gp-era-badge-icon">⚔️</div>
+        <div class="gp-era-badge-name">BRONZO</div>
+        <div class="gp-era-badge-sub">Liv. 8+</div>
+      </div>
+      <div class="gp-era-badge">
+        <div class="gp-era-badge-icon">🏰</div>
+        <div class="gp-era-badge-name">MEDIEVALE</div>
+        <div class="gp-era-badge-sub">Liv. 22+</div>
+      </div>
+      <div class="gp-era-badge">
+        <div class="gp-era-badge-icon">🎨</div>
+        <div class="gp-era-badge-name">RINASCIMENTO</div>
+        <div class="gp-era-badge-sub">Liv. 48+</div>
+      </div>
+      <div class="gp-era-badge">
+        <div class="gp-era-badge-icon">⚙️</div>
+        <div class="gp-era-badge-name">INDUSTRIALE</div>
+        <div class="gp-era-badge-sub">Liv. 85+</div>
+      </div>
+      <div class="gp-era-badge">
+        <div class="gp-era-badge-icon">🚀</div>
+        <div class="gp-era-badge-name">MODERNA</div>
+        <div class="gp-era-badge-sub">Liv. 135+</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 3: Costruzioni & Potenziamenti Tap ── -->
+  <section class="gp-section">
+    <div class="gp-section-header">
+      <div class="gp-section-icon">🏛</div>
+      <div class="gp-section-title">COSTRUZIONI &amp; TAP</div>
+      <div class="gp-section-sub">Due vie per accumulare ricchezza</div>
+      <div class="gp-divider"></div>
+    </div>
+    <div class="gp-grid">
+      <div class="gp-card">
+        <div class="gp-card-icon">🏚</div>
+        <div class="gp-card-title">CAPANNA</div>
+        <div class="gp-card-body">Il punto di partenza. Genera <span class="gp-highlight">0.5 oro/s</span>. Costruiscila più volte per aumentare il reddito base della tua tribù.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">🌾</div>
+        <div class="gp-card-title">CAMPO</div>
+        <div class="gp-card-body">Sblocca nell'Era del Bronzo. Produce <span class="gp-highlight">3 oro/s</span>. I campi coltivati nutrono la tua crescente popolazione.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">⛏️</div>
+        <div class="gp-card-title">MINIERA</div>
+        <div class="gp-card-body">Generatrice di risorse, attiva dall'Era Medievale. Produce <span class="gp-highlight">15 oro/s</span> scavando nelle profondità della terra.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">🏯</div>
+        <div class="gp-card-title">FORTEZZA</div>
+        <div class="gp-card-body">Difesa e produzione unite: <span class="gp-highlight">80 oro/s</span>. Le sue mura proteggono il tuo regno e attirano nuovi commercianti.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">⛪</div>
+        <div class="gp-card-title">CATTEDRALE</div>
+        <div class="gp-card-body">Simbolo del Rinascimento: <span class="gp-highlight">400 oro/s</span>. Le donazioni dei fedeli riempiono le casse imperiali ogni secondo.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">🏭</div>
+        <div class="gp-card-title">FABBRICA</div>
+        <div class="gp-card-body">L'apice industriale: <span class="gp-highlight">2.000 oro/s</span>. Linee di produzione automatizzate che non si fermano mai.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 4: Potenzia il Tap & Negozio ── -->
+  <section class="gp-section">
+    <div class="gp-section-header">
+      <div class="gp-section-icon">⚡</div>
+      <div class="gp-section-title">POTENZIA &amp; NEGOZIO</div>
+      <div class="gp-section-sub">Moltiplica il tuo potere e sblocca bonus speciali</div>
+      <div class="gp-divider"></div>
+    </div>
+    <div class="gp-grid">
+      <div class="gp-card">
+        <div class="gp-card-icon">⚡</div>
+        <div class="gp-card-title">TAP UPGRADES</div>
+        <div class="gp-card-body">6 potenziamenti per il tap, da <span class="gp-highlight">Selce Affilata (×2)</span> fino a <span class="gp-highlight">IA Quantistica (×50)</span>. Si sbloccano avanzando nelle ere. Acquistabili una sola volta.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">💎</div>
+        <div class="gp-card-title">GEMME IMPERIALI</div>
+        <div class="gp-card-body">Valuta premium acquistabile con oro o ottenuta tramite <span class="gp-highlight">Prestige</span>. Spendile nel Negozio per boost temporanei e vantaggi unici.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">🏪</div>
+        <div class="gp-card-title">NEGOZIO</div>
+        <div class="gp-card-body">Acquista boost a tempo: <span class="gp-highlight">Gold Rush (+100% reddito)</span>, <span class="gp-highlight">Tap Frenzy (+500% tap)</span>, <span class="gp-highlight">Grande Sconto (-50% costi)</span> e altro ancora.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">⏩</div>
+        <div class="gp-card-title">OFFLINE BONUS</div>
+        <div class="gp-card-body">Il gioco genera reddito anche quando è chiuso, fino a un massimo di <span class="gp-highlight">4 ore</span>. Compra l'"Offline 4h" nel negozio per ricevere 4 ore di reddito istantaneo.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 5: Prestige ── -->
+  <section class="gp-section">
+    <div class="gp-section-header">
+      <div class="gp-section-icon">⭐</div>
+      <div class="gp-section-title">PRESTIGE</div>
+      <div class="gp-section-sub">Ricomincia dall'inizio, ma più forte di prima</div>
+      <div class="gp-divider"></div>
+    </div>
+    <div class="gp-grid gp-grid-3">
+      <div class="gp-card">
+        <div class="gp-card-icon">🔄</div>
+        <div class="gp-card-title">QUANDO FARE PRESTIGE</div>
+        <div class="gp-card-body">Quando la somma totale dei livelli dei tuoi edifici raggiunge <span class="gp-highlight">160</span>, appare il pulsante Prestige in basso a destra.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">💎</div>
+        <div class="gp-card-title">COSA OTTIENI</div>
+        <div class="gp-card-body">Ogni prestige ti regala <span class="gp-highlight">Gemme</span> permanenti basate sui tuoi progressi. Le gemme si accumulano tra un prestige e l'altro.</div>
+      </div>
+      <div class="gp-card">
+        <div class="gp-card-icon">🚀</div>
+        <div class="gp-card-title">RIPARTENZA POTENZIATA</div>
+        <div class="gp-card-body">Ricominci dall'Era Neolitica, ma con un <span class="gp-highlight">bonus permanente</span> che rende ogni run successiva più veloce ed esplosiva.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA finale ── -->
+  <div class="gp-cta">
+    <p>Hai capito le regole. Ora è il momento di agire.</p>
+    <button class="l-play" onclick="enterGame()">▶ &nbsp;INIZIA L'IMPERO</button>
+  </div>
+
+</div><!-- /guide-pages -->
+</div><!-- /info-site -->
 
 <div id="gc" style="display:none">
   <div id="progress"><div id="progress-fill"></div></div>
@@ -653,13 +1110,34 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 
 // ─── ENTER GAME ────────────────────────────────────────
 function enterGame(){
+  window.scrollTo(0,0);
+  var infoSite=document.getElementById('info-site');
   var landing=document.getElementById('landing');
   landing.classList.add('l-hide');
   var gc=document.getElementById('gc');
   gc.style.display='flex';
+  document.body.classList.add('game-active');
   if(window._stopLanding)window._stopLanding();
-  setTimeout(function(){landing.style.display='none';},900);
+  setTimeout(function(){infoSite.style.display='none';},900);
   initGame();
+}
+
+// ─── GUIDE THEME TOGGLE ───────────────────────────────
+function toggleGuideTheme(){
+  var gp=document.getElementById('guide-pages');
+  var icon=document.getElementById('theme-icon');
+  var lbl=document.getElementById('theme-label');
+  if(gp.classList.contains('gp-dark')){
+    gp.classList.remove('gp-dark');
+    gp.classList.add('gp-light');
+    icon.textContent='🌙';
+    lbl.textContent='TEMA SCURO';
+  }else{
+    gp.classList.remove('gp-light');
+    gp.classList.add('gp-dark');
+    icon.textContent='☀️';
+    lbl.textContent='TEMA CHIARO';
+  }
 }
 
 
