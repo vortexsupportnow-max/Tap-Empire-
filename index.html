@@ -262,10 +262,7 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
   align-items:center;justify-content:center;
   overflow:hidden;
 }
-#landing.l-hide{
-  animation:landingExit 0.85s cubic-bezier(0.7,0,1,1) forwards;
-  pointer-events:none;
-}
+#landing.l-hide,
 #info-site.l-hide{
   animation:landingExit 0.85s cubic-bezier(0.7,0,1,1) forwards;
   pointer-events:none;
@@ -649,13 +646,13 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 }
 .gp-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:16px;
   max-width:900px;
   margin:0 auto;
 }
 .gp-grid-3{
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
 }
 .gp-card{
   border-radius:16px;padding:22px 20px;
@@ -1114,6 +1111,7 @@ function enterGame(){
   var infoSite=document.getElementById('info-site');
   var landing=document.getElementById('landing');
   landing.classList.add('l-hide');
+  infoSite.classList.add('l-hide');
   var gc=document.getElementById('gc');
   gc.style.display='flex';
   document.body.classList.add('game-active');
